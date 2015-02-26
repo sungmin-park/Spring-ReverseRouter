@@ -10,9 +10,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.junit.Assert
 import org.springframework.context.ApplicationListener
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.annotation.Bean
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.context.annotation.ComponentScan
@@ -31,6 +29,14 @@ RequestMapping(array("/user"))
 class UserController {
     RequestMapping(array("/"))
     fun list() {
+    }
+
+    RequestMapping(array("/{id}"))
+    fun show() {
+    }
+
+    RequestMapping(array("/{id}/edit", "/new/edit"))
+    fun edit() {
     }
 }
 
@@ -56,12 +62,26 @@ class ReverseRouterTest {
 
     Test
     fun testIndex() {
-        Assert.assertEquals("/", reverseRouter.urlFor("Main.index"))
+        Assert.assertEquals("/", reverseRouter.urlFor("main.index"))
     }
 
     Test
     fun testUser() {
-        Assert.assertEquals("/user/", reverseRouter.urlFor("User.list"))
+        Assert.assertEquals("/user/", reverseRouter.urlFor("user.list"))
+        Assert.assertEquals("/user/12", reverseRouter.urlFor("user.show", "id" to 12))
+
+        Assert.assertEquals("/user/new/edit", reverseRouter.urlFor("user.edit"))
+        Assert.assertEquals("/user/12/edit", reverseRouter.urlFor("user.edit", "id" to 12))
+    }
+
+    Test
+    fun testHandleNullable() {
+        Assert.assertEquals("/user/new/edit", reverseRouter.urlFor("user.edit", "id" to null))
+    }
+
+    Test
+    fun testExtraParams() {
+        Assert.assertEquals("/user/?page=10", reverseRouter.urlFor("user.list", "page" to 10))
     }
 }
 

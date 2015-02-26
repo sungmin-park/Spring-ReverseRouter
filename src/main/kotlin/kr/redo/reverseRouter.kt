@@ -6,18 +6,54 @@ import org.springframework.web.util.UriComponentsBuilder
 import org.springframework.web.util.UriComponents
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
+import java.util.regex.Pattern
+import java.net.URLEncoder
+import kr.redo.reverseRouter.utils.encodeQueryParams
+import kr.redo.reverseRouter.utils.toVariableName
+import kr.redo.reverseRouter.utils.join
 
 
 class PatternCompiler(pattern: String) {
+    class object {
+        val NAMES_PATTERN = Pattern.compile("\\{([^/]+?)\\}")
+    }
+
     val pattern: String
     val uriComponentsBuilder: UriComponents
+    val pathVariables: List<String>
+
     {
         this.pattern = pattern
+        val matcher = NAMES_PATTERN.matcher(pattern)
+        val pathVariables = arrayListOf<String>()
+        while (matcher.find()) {
+            pathVariables.add(matcher.group(1))
+        }
+        this.pathVariables = pathVariables
         uriComponentsBuilder = UriComponentsBuilder.fromPath(pattern).build()
     }
 
-    fun compile(): String? {
-        return uriComponentsBuilder.expand(hashMapOf()).toString();
+    fun canCompile(args: List<Pair<String, Any>>): Boolean {
+        val keys = args.map { it.first }
+        return pathVariables.firstOrNull({ it !in keys }) == null
+    }
+
+    fun compile(args: List<Pair<String, Any>>): String {
+        val pathMap = hashMapOf<String, String>()
+        val queryParams = arrayListOf<Pair<String, Any>>();
+        args.forEach {
+            if (it.first in pathVariables) {
+                pathMap.put(it.first, it.second.toString())
+            } else {
+                queryParams.add(it)
+            }
+        }
+        val uri = uriComponentsBuilder.expand(pathMap).toString()
+        if (queryParams.size() == 0) {
+            return uri;
+        }
+        val separator = if ("?" in uri) "&" else "?"
+        return separator.join(listOf(uri, encodeQueryParams(params = queryParams)));
     }
 }
 
@@ -47,7 +83,7 @@ class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
             if (method == null) {
                 continue
             }
-            val beanName = handlerMethod.getBeanType().getSimpleName().replaceAll("Controller$", "")
+            val beanName = handlerMethod.getBeanType().getSimpleName().replaceAll("Controller$", "").toVariableName()
             val endpoint = "$beanName.${method.getName()}"
 
             assert(!map.containsKey(endpoint))
@@ -56,12 +92,13 @@ class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
         }
     }
 
-    fun urlFor(endpoint: String): String {
+    fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+        [suppress("UNCHECKED_CAST")]
+        val params = args.filter { it.second != null } as List<Pair<String, Any>>
         val patterns = map.get(endpoint)!!
         for (pattern in patterns) {
-            val url = pattern.compile()
-            if (url != null) {
-                return url
+            if (pattern.canCompile(params)) {
+                return pattern.compile(params)
             }
         }
         throw IllegalArgumentException()
