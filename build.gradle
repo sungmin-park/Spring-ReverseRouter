@@ -1,0 +1,30 @@
+buildscript {
+    ext.kotlin_version = '0.10.195'
+    ext.spring_version = '3.2.3.RELEASE'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: "kotlin"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(
+            "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
+            "org.springframework:spring-webmvc:$spring_version"
+    )
+
+    testCompile(
+            'javax.servlet:servlet-api:2.5',
+            'junit:junit:4.12',
+            "org.springframework:spring-test:$spring_version"
+    )
+}
