@@ -56,7 +56,7 @@ class PatternCompiler(pattern: String) {
     }
 }
 
-class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
+open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         if (event == null) {
             return
@@ -102,10 +102,4 @@ class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
         }
         throw IllegalArgumentException()
     }
-}
-
-val reverseRouter = ReverseRouter()
-
-fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
-    return reverseRouter.urlFor(endpoint = endpoint, args = *args)
 }
