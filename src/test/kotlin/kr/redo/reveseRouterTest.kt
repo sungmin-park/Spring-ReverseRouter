@@ -15,8 +15,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.context.annotation.ComponentScan
 
-val reverseRouter = ReverseRouter()
-
 Controller
 class MainController {
     RequestMapping(array("/"))
@@ -62,26 +60,26 @@ class ReverseRouterTest {
 
     Test
     fun testIndex() {
-        Assert.assertEquals("/", reverseRouter.urlFor("main.index"))
+        Assert.assertEquals("/", urlFor("main.index"))
     }
 
     Test
     fun testUser() {
-        Assert.assertEquals("/user/", reverseRouter.urlFor("user.list"))
-        Assert.assertEquals("/user/12", reverseRouter.urlFor("user.show", "id" to 12))
+        Assert.assertEquals("/user/", urlFor("user.list"))
+        Assert.assertEquals("/user/12", urlFor("user.show", "id" to 12))
 
-        Assert.assertEquals("/user/new/edit", reverseRouter.urlFor("user.edit"))
-        Assert.assertEquals("/user/12/edit", reverseRouter.urlFor("user.edit", "id" to 12))
+        Assert.assertEquals("/user/new/edit", urlFor("user.edit"))
+        Assert.assertEquals("/user/12/edit", urlFor("user.edit", "id" to 12))
     }
 
     Test
     fun testHandleNullable() {
-        Assert.assertEquals("/user/new/edit", reverseRouter.urlFor("user.edit", "id" to null))
+        Assert.assertEquals("/user/new/edit", urlFor("user.edit", "id" to null))
     }
 
     Test
     fun testExtraParams() {
-        Assert.assertEquals("/user/?page=10", reverseRouter.urlFor("user.list", "page" to 10))
+        Assert.assertEquals("/user/?page=10", urlFor("user.list", "page" to 10))
     }
 }
 

@@ -7,7 +7,6 @@ import org.springframework.web.util.UriComponents
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
 import java.util.regex.Pattern
-import java.net.URLEncoder
 import kr.redo.reverseRouter.utils.encodeQueryParams
 import kr.redo.reverseRouter.utils.toVariableName
 import kr.redo.reverseRouter.utils.join
@@ -103,4 +102,10 @@ class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
         }
         throw IllegalArgumentException()
     }
+}
+
+val reverseRouter = ReverseRouter()
+
+fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+    return reverseRouter.urlFor(endpoint = endpoint, args = *args)
 }
