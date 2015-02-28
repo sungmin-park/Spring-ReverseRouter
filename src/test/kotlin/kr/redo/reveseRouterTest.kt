@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.context.annotation.ComponentScan
 import kr.redo.reverseRouter.kotlin.reverseRouter
 import kr.redo.reverseRouter.kotlin.urlFor
+import kr.redo.reverseRouter.kotlin.redirect
+import kr.redo.reverseRouter.kotlin.redirectFor
 
 Controller
 class MainController {
@@ -83,5 +85,16 @@ class ReverseRouterTest {
     fun testExtraParams() {
         Assert.assertEquals("/user/?page=10", urlFor("user.list", "page" to 10))
     }
+
+    Test
+    fun testRedirect() {
+        Assert.assertEquals("redirect:/user/", redirect(urlFor("user.list")).getViewName())
+    }
+
+    Test
+    fun restRedirectFor() {
+        Assert.assertEquals("redirect:/user/", redirectFor("user.list").getViewName())
+    }
+
 }
 
