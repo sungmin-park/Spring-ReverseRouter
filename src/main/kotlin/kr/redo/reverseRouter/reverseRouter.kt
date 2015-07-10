@@ -1,19 +1,19 @@
 package kr.redo.reverseRouter
 
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
-import kotlin.properties.Delegates
-import org.springframework.web.util.UriComponentsBuilder
-import org.springframework.web.util.UriComponents
+import kr.redo.reverseRouter.utils.encodeQueryParams
+import kr.redo.reverseRouter.utils.join
+import kr.redo.reverseRouter.utils.toVariableName
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.util.UriComponents
+import org.springframework.web.util.UriComponentsBuilder
 import java.util.regex.Pattern
-import kr.redo.reverseRouter.utils.encodeQueryParams
-import kr.redo.reverseRouter.utils.toVariableName
-import kr.redo.reverseRouter.utils.join
+import kotlin.properties.Delegates
 
 
 class PatternCompiler(pattern: String) {
-    class object {
+    companion object {
         val NAMES_PATTERN = Pattern.compile("\\{([^/]+?)\\}")
     }
 
@@ -21,7 +21,7 @@ class PatternCompiler(pattern: String) {
     val uriComponentsBuilder: UriComponents
     val pathVariables: List<String>
 
-    {
+    init {
         this.pattern = pattern
         val matcher = NAMES_PATTERN.matcher(pattern)
         val pathVariables = arrayListOf<String>()
@@ -78,11 +78,12 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
 
         val mappings = requestMappingHandlerMapping.getHandlerMethods()
         for ((info, handlerMethod) in mappings) {
-            val method = handlerMethod.getMethod()
-            if (method == null) {
-                continue
-            }
-            val beanName = handlerMethod.getBeanType().getSimpleName().replaceAll("Controller$", "").toVariableName()
+            val method = handlerMethod.getMethod() ?: continue
+            val beanName = handlerMethod
+                    .getBeanType()
+                    .getSimpleName()
+                    .replace("Controller$".toRegex(), "")
+                    .toVariableName()
             val endpoint = "$beanName.${method.getName()}"
 
             assert(!map.containsKey(endpoint))
@@ -92,7 +93,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
     }
 
     fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
-        [suppress("UNCHECKED_CAST")]
+        @suppress("UNCHECKED_CAST")
         val params = args.filter { it.second != null } as List<Pair<String, Any>>
         val patterns = map.get(endpoint)!!
         for (pattern in patterns) {

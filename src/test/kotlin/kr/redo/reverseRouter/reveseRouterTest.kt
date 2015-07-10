@@ -21,23 +21,23 @@ import kr.redo.reverseRouter.kotlin.redirectFor
 
 Controller
 class MainController {
-    RequestMapping(array("/"))
+    RequestMapping("/")
     fun index() {
     }
 }
 
 Controller
-RequestMapping(array("/user"))
+RequestMapping("/user")
 class UserController {
-    RequestMapping(array("/"))
+    RequestMapping("/")
     fun list() {
     }
 
-    RequestMapping(array("/{id}"))
+    RequestMapping("/{id}")
     fun show() {
     }
 
-    RequestMapping(array("/{id}/edit", "/new/edit"))
+    RequestMapping("/{id}/edit", "/new/edit")
     fun edit() {
     }
 }
@@ -53,8 +53,8 @@ open class WebMvcConfig : WebMvcConfigurerAdapter() {
 }
 
 
-RunWith(javaClass<SpringJUnit4ClassRunner>())
-ContextConfiguration(classes = array(javaClass<WebMvcConfig>()))
+RunWith(SpringJUnit4ClassRunner::class)
+ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
 WebAppConfiguration
 class ReverseRouterTest {
     Test

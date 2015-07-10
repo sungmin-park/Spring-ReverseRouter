@@ -4,7 +4,7 @@ import java.net.URLEncoder
 
 fun String.join(strings: List<String>): String {
     val builder = StringBuilder()
-    strings.forEachIndexed {(i, s) ->
+    strings.forEachIndexed { i, s ->
         if (i != 0) {
             builder.append(this)
         }
@@ -19,7 +19,7 @@ fun String.toVariableName():String {
 
 fun encodeQueryParams(params: List<Pair<String, Any>>): String {
     return "&".join(
-            params.map {(param) ->
+            params.map { param ->
                 "=".join(listOf(param.first, param.second.toString()).map { URLEncoder.encode(it, "UTF-8") })
             }
     )
