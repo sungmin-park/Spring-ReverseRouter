@@ -5,10 +5,17 @@ import kr.redo.reverseRouter.utils.join
 import kr.redo.reverseRouter.utils.toVariableName
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.web.method.HandlerMethod
+import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.util.UriComponents
 import org.springframework.web.util.UriComponentsBuilder
 import java.util.regex.Pattern
+import javax.inject.Inject
+import javax.naming.ConfigurationException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import kotlin.properties.Delegates
 
 
@@ -56,20 +63,43 @@ class PatternCompiler(pattern: String) {
     }
 }
 
-open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
+open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerInterceptor {
+    Inject private var request: HttpServletRequest? = null
+
+    var initialized = false
+    private val map: Map<String, List<PatternCompiler>> by Delegates.lazy {
+        assert(initialized)
+        hashMapOf<String, List<PatternCompiler>>()
+    }
+    private val REVERSER_ROUTER_INFORMATION = javaClass<ReverserRouterInformation>().getTypeName()
+
+    public val current: ReverserRouterInformation
+        get() {
+            val attribute = request!!.getAttribute(REVERSER_ROUTER_INFORMATION) ?:
+                    throw ConfigurationException("ReverseRouter dose not configured as an interceptor.")
+            return attribute as ReverserRouterInformation
+        }
+
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         if (event == null) {
             return
         }
         val context = event.getApplicationContext()
-        val requestMappingHandlerMapping = context.getBean(javaClass<RequestMappingHandlerMapping>())
-        initialize(requestMappingHandlerMapping)
+        initialize(context.getBean(javaClass<RequestMappingHandlerMapping>()))
     }
 
-    var initialized = false
-    val map: Map<String, List<PatternCompiler>> by Delegates.lazy {
-        assert(initialized)
-        hashMapOf<String, List<PatternCompiler>>()
+    override fun preHandle(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?): Boolean {
+        if (handler is HandlerMethod) {
+            val (baseName, methodName) = handler.endpoint
+            request?.setAttribute(REVERSER_ROUTER_INFORMATION, ReverserRouterInformation(baseName, methodName))
+        }
+        return true;
+    }
+
+    override fun postHandle(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?, modelAndView: ModelAndView?) {
+    }
+
+    override fun afterCompletion(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?, ex: Exception?) {
     }
 
     fun initialize(requestMappingHandlerMapping: RequestMappingHandlerMapping) {
@@ -78,13 +108,9 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
 
         val mappings = requestMappingHandlerMapping.getHandlerMethods()
         for ((info, handlerMethod) in mappings) {
-            val method = handlerMethod.getMethod() ?: continue
-            val beanName = handlerMethod
-                    .getBeanType()
-                    .getSimpleName()
-                    .replace("Controller$".toRegex(), "")
-                    .toVariableName()
-            val endpoint = "$beanName.${method.getName()}"
+            handlerMethod.getMethod() ?: continue
+            val (beanName, methodName) = handlerMethod.endpoint
+            val endpoint = "$beanName.$methodName"
 
             assert(!map.containsKey(endpoint))
 
@@ -103,4 +129,9 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
         }
         throw IllegalArgumentException()
     }
+
+    private val HandlerMethod.endpoint: Pair<String, String>
+        get() {
+            return getBeanType().getSimpleName().replace("Controller$".toRegex(), "").toVariableName() to getMethod().getName()
+        }
 }

@@ -17,10 +17,14 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import javax.inject.Inject
 import kotlin.properties.Delegates
@@ -48,6 +52,16 @@ class UserController {
     }
 }
 
+Controller
+RequestMapping("/router")
+class RouterController {
+    RequestMapping("/endpoint")
+    ResponseBody
+    fun endpoint(): String {
+        return reverseRouter.current.endpoint
+    }
+}
+
 Configuration
 ComponentScan
 EnableWebMvc
@@ -55,8 +69,12 @@ open class WebMvcConfig : WebMvcConfigurerAdapter() {
     Bean open fun reverseRouter(): ReverseRouter = reverseRouter
 
     Bean open fun applicationListener(): ApplicationListener<*> = reverseRouter()
-}
 
+    override fun addInterceptors(registry: InterceptorRegistry?) {
+        registry?.addInterceptor(reverseRouter())
+        super.addInterceptors(registry)
+    }
+}
 
 RunWith(SpringJUnit4ClassRunner::class)
 ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
@@ -111,5 +129,10 @@ class ReverseRouterTest {
         Assert.assertEquals("redirect:/user/", redirectFor("user.list").getViewName())
     }
 
+    Test
+    fun testCurrentEndpoint() {
+        mockMvc.perform(MockMvcRequestBuilders.get(urlFor("router.endpoint")))
+                .andExpect(MockMvcResultMatchers.content().string("router.endpoint"))
+    }
 }
 

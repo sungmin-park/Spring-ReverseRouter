@@ -22,10 +22,12 @@ dependencies {
     compile(
             "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
             "org.springframework:spring-webmvc:$spring_version",
-            'javax.inject:javax.inject:1'
+            'javax.inject:javax.inject:1',
+            'javax.servlet:javax.servlet-api:3.1.0'
     )
 
     testCompile(
+            "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version",
             'javax.servlet:servlet-api:2.5',
             'junit:junit:4.12',
             "org.springframework:spring-test:$spring_version"
