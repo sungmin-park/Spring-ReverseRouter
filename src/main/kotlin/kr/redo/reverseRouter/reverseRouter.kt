@@ -61,8 +61,8 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent> {
         if (event == null) {
             return
         }
-        val requestMappingHandlerMapping =
-                event.getApplicationContext().getBean("requestMappingHandlerMapping") as RequestMappingHandlerMapping
+        val context = event.getApplicationContext()
+        val requestMappingHandlerMapping = context.getBean(javaClass<RequestMappingHandlerMapping>())
         initialize(requestMappingHandlerMapping)
     }
 
