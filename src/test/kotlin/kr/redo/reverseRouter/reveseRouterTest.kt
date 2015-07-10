@@ -60,6 +60,12 @@ class RouterController {
     fun endpoint(): String {
         return reverseRouter.current.endpoint
     }
+
+    RequestMapping("/dotNotation")
+    ResponseBody
+    fun dotNotation(): String {
+        return urlFor(".dotNotation")
+    }
 }
 
 Configuration
@@ -133,6 +139,12 @@ class ReverseRouterTest {
     fun testCurrentEndpoint() {
         mockMvc.perform(MockMvcRequestBuilders.get(urlFor("router.endpoint")))
                 .andExpect(MockMvcResultMatchers.content().string("router.endpoint"))
+    }
+
+    Test
+    fun testDotNotation() {
+        mockMvc.perform(MockMvcRequestBuilders.get(urlFor("router.dotNotation")))
+                .andExpect(MockMvcResultMatchers.content().string(urlFor("router.dotNotation")))
     }
 }
 

@@ -11,6 +11,7 @@ import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.util.UriComponents
 import org.springframework.web.util.UriComponentsBuilder
+import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import java.util.regex.Pattern
 import javax.inject.Inject
 import javax.naming.ConfigurationException
@@ -119,9 +120,12 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     }
 
     fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+        if (endpoint.startsWith('.')) {
+            return urlFor("${current.beanName}$endpoint", *args)
+        }
         @suppress("UNCHECKED_CAST")
         val params = args.filter { it.second != null } as List<Pair<String, Any>>
-        val patterns = map.get(endpoint)!!
+        val patterns = map.get(endpoint) ?: throw IllegalArgumentException("Not found $endpoint")
         for (pattern in patterns) {
             if (pattern.canCompile(params)) {
                 return pattern.compile(params)
