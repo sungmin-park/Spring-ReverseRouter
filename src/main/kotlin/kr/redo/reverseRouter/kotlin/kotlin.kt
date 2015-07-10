@@ -9,6 +9,10 @@ fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
     return reverseRouter.urlFor(endpoint = endpoint, args = *args)
 }
 
+fun currentFor(vararg args: Pair<String, Any?>): String {
+    return reverseRouter.currentFor(*args)
+}
+
 fun redirect(url: String): ModelAndView {
     return ModelAndView("redirect:$url")
 }

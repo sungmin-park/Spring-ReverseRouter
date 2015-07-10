@@ -138,4 +138,8 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         get() {
             return getBeanType().getSimpleName().replace("Controller$".toRegex(), "").toVariableName() to getMethod().getName()
         }
+
+    fun currentFor(vararg args: Pair<String, Any?>): String {
+        return urlFor(current.endpoint, *args)
+    }
 }

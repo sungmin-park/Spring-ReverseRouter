@@ -1,9 +1,6 @@
 package kr.redo.reverseRouter
 
-import kr.redo.reverseRouter.kotlin.redirect
-import kr.redo.reverseRouter.kotlin.redirectFor
-import kr.redo.reverseRouter.kotlin.reverseRouter
-import kr.redo.reverseRouter.kotlin.urlFor
+import kr.redo.reverseRouter.kotlin.*
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -57,15 +54,15 @@ RequestMapping("/router")
 class RouterController {
     RequestMapping("/endpoint")
     ResponseBody
-    fun endpoint(): String {
-        return reverseRouter.current.endpoint
-    }
+    fun endpoint() = reverseRouter.current.endpoint
 
     RequestMapping("/dotNotation")
     ResponseBody
-    fun dotNotation(): String {
-        return urlFor(".dotNotation")
-    }
+    fun dotNotation() = urlFor(".dotNotation")
+
+    RequestMapping("/currentUrl")
+    ResponseBody
+    fun currentUrl() = currentFor()
 }
 
 Configuration
@@ -81,6 +78,10 @@ open class WebMvcConfig : WebMvcConfigurerAdapter() {
         super.addInterceptors(registry)
     }
 }
+
+fun get(urlTemplate: String, vararg urlVariables: Any) = MockMvcRequestBuilders.get(urlTemplate, *urlVariables)!!
+
+fun content() = MockMvcResultMatchers.content()
 
 RunWith(SpringJUnit4ClassRunner::class)
 ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
@@ -137,14 +138,17 @@ class ReverseRouterTest {
 
     Test
     fun testCurrentEndpoint() {
-        mockMvc.perform(MockMvcRequestBuilders.get(urlFor("router.endpoint")))
-                .andExpect(MockMvcResultMatchers.content().string("router.endpoint"))
+        mockMvc.perform(get(urlFor("router.endpoint"))).andExpect(content().string("router.endpoint"))
     }
 
     Test
     fun testDotNotation() {
-        mockMvc.perform(MockMvcRequestBuilders.get(urlFor("router.dotNotation")))
-                .andExpect(MockMvcResultMatchers.content().string(urlFor("router.dotNotation")))
+        mockMvc.perform(get(urlFor("router.dotNotation"))).andExpect(content().string("/router/dotNotation"))
+    }
+
+    Test
+    fun testCurrentFor() {
+        mockMvc.perform(get(urlFor("router.currentUrl"))).andExpect(content().string("/router/currentUrl"))
     }
 }
 
