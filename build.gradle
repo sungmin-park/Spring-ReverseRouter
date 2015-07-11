@@ -44,3 +44,11 @@ dependencies {
 
 apply plugin: 'maven'
 group = 'com.github.parksungmin'
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier 'sources'
+	from sourceSets.main.allSource
+}
+ 
+artifacts {
+	archives sourcesJar
+}
