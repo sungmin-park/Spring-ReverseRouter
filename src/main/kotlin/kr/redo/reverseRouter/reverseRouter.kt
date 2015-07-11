@@ -7,11 +7,11 @@ import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.HandlerMapping
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.util.UriComponents
 import org.springframework.web.util.UriComponentsBuilder
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import java.util.regex.Pattern
 import javax.inject.Inject
 import javax.naming.ConfigurationException
@@ -20,17 +20,15 @@ import javax.servlet.http.HttpServletResponse
 import kotlin.properties.Delegates
 
 
-class PatternCompiler(pattern: String) {
+class PatternCompiler(public val pattern: String) {
     companion object {
         val NAMES_PATTERN = Pattern.compile("\\{([^/]+?)\\}")
     }
 
-    val pattern: String
     val uriComponentsBuilder: UriComponents
     val pathVariables: List<String>
 
     init {
-        this.pattern = pattern
         val matcher = NAMES_PATTERN.matcher(pattern)
         val pathVariables = arrayListOf<String>()
         while (matcher.find()) {
@@ -92,7 +90,12 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     override fun preHandle(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?): Boolean {
         if (handler is HandlerMethod) {
             val (baseName, methodName) = handler.endpoint
-            request?.setAttribute(REVERSER_ROUTER_INFORMATION, ReverserRouterInformation(baseName, methodName))
+            @suppress("UNCHECKED_CAST")
+            val pathVariables =
+                    request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>
+            request.setAttribute(
+                    REVERSER_ROUTER_INFORMATION, ReverserRouterInformation(baseName, methodName, pathVariables)
+            )
         }
         return true;
     }
@@ -131,7 +134,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                 return pattern.compile(params)
             }
         }
-        throw IllegalArgumentException()
+        throw IllegalArgumentException("Can not compile $endpoint with ${params} for ${patterns.map { it.pattern }.joinToString()}")
     }
 
     private val HandlerMethod.endpoint: Pair<String, String>
