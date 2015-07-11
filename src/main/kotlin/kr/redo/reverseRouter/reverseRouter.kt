@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.util.regex.Pattern
 import javax.inject.Inject
 import javax.naming.ConfigurationException
+import javax.servlet.DispatcherType
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.properties.Delegates
@@ -95,8 +96,20 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             @suppress("UNCHECKED_CAST")
             val pathVariables =
                     request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>
+
+            val requestURL: String
+            if (request.getDispatcherType() == DispatcherType.INCLUDE) {
+                requestURL = request.getAttribute("javax.servlet.include.request_uri") as String
+            } else {
+                if (request.getQueryString() != null) {
+                    requestURL = request.getRequestURI() + "?" + request.getQueryString()
+                } else {
+                    requestURL = request.getRequestURI()
+                }
+            }
             request.setAttribute(
-                    REVERSER_ROUTER_INFORMATION, ReverserRouterInformation(baseName, methodName, pathVariables)
+                    REVERSER_ROUTER_INFORMATION,
+                    ReverserRouterInformation(baseName, methodName, pathVariables, requestURL)
             )
         }
         return true;
