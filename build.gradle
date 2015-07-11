@@ -41,3 +41,6 @@ dependencies {
             "org.springframework:spring-test:$spring_version"
     )
 }
+
+apply plugin: 'maven'
+group = 'com.github.parksungmin'
