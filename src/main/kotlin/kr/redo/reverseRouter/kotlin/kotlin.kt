@@ -13,10 +13,10 @@ fun currentFor(vararg args: Pair<String, Any?>): String {
     return reverseRouter.currentFor(*args)
 }
 
-fun redirect(url: String): ModelAndView {
-    return ModelAndView("redirect:$url")
+fun redirect(url: String): String {
+    return "redirect:$url"
 }
 
-fun redirectFor(endpoint: String, vararg args: Pair<String, Any?>): ModelAndView {
-    return ModelAndView("redirect:${urlFor(endpoint = endpoint, args = *args)}")
+fun redirectFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+    return "redirect:${urlFor(endpoint = endpoint, args = *args)}"
 }

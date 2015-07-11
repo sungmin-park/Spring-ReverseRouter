@@ -132,12 +132,12 @@ class ReverseRouterTest {
 
     Test
     fun testRedirect() {
-        Assert.assertEquals("redirect:/user/", redirect(urlFor("user.list")).getViewName())
+        Assert.assertEquals("redirect:/user/", redirect(urlFor("user.list")))
     }
 
     Test
     fun restRedirectFor() {
-        Assert.assertEquals("redirect:/user/", redirectFor("user.list").getViewName())
+        Assert.assertEquals("redirect:/user/", redirectFor("user.list"))
     }
 
     Test
