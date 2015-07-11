@@ -79,6 +79,8 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             return attribute as ReverserRouterInformation
         }
 
+    public val builder: ReverseRouterBuilder get() = builderFor(current.endpoint)
+
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         if (event == null) {
             return
@@ -163,5 +165,9 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
 
     public fun currentFor(name: String, value: Any?, vararg values: Any?): String {
         return currentFor(*mergeToArrayOfPairs(name, value, values))
+    }
+
+    fun builderFor(endpoint: String): ReverseRouterBuilder {
+        return ReverseRouterBuilder(this, endpoint)
     }
 }

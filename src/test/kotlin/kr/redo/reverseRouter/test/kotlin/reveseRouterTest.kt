@@ -69,6 +69,10 @@ class RouterController {
     RequestMapping("/current/{id}")
     ResponseBody
     fun current() = currentFor("id" to reverseRouter.current.pathVariables["id"])
+
+    RequestMapping("/builder")
+    ResponseBody
+    fun builder() = reverseRouter.builder.toString()
 }
 
 Configuration
@@ -156,6 +160,19 @@ class ReverseRouterTest {
     fun testCurrentFor() {
         mockMvc.perform(get(urlFor("router.currentUrl"))).andExpect(content().string("/router/currentUrl"))
         mockMvc.perform(get(urlFor("router.current", "id" to 1))).andExpect(content().string("/router/current/1"))
+    }
+
+    Test
+    fun testBuilderFor() {
+        Assert.assertEquals("/user/new/edit", reverseRouter.builderFor("user.edit").toString())
+        Assert.assertEquals(
+                "/user/new/edit?name=john", reverseRouter.builderFor("user.edit").add("name", "john").toString()
+        )
+    }
+
+    Test
+    fun testBuilder() {
+        mockMvc.perform(get("/router/builder")).andExpect(content().string("/router/builder"))
     }
 }
 
