@@ -106,7 +106,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     override fun afterCompletion(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?, ex: Exception?) {
     }
 
-    fun initialize(requestMappingHandlerMapping: RequestMappingHandlerMapping) {
+    public fun initialize(requestMappingHandlerMapping: RequestMappingHandlerMapping) {
         initialized = true
         val map: MutableMap<String, List<PatternCompiler>> = this.map as MutableMap
 
@@ -127,11 +127,13 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     }
 
     public fun urlFor(endpoint: String, name: String, value: Any?, vararg values: Any?): String {
-        val params = arrayOf(name to value) + (0..(values.size() / 2) - 1).map { it * 2 }.map { values[it] as String to values[it + 1] }
-        return urlFor(endpoint, *params.toTypedArray())
+        val params = mergeToArrayOfPairs(name, value, values)
+        return urlFor(endpoint, *params)
     }
 
-    fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+    private fun mergeToArrayOfPairs(name: String, value: Any?, values: Array<out Any?>) = (arrayOf(name to value) + (0..(values.size() / 2) - 1).map { it * 2 }.map { values[it] as String to values[it + 1] }).toTypedArray()
+
+    public fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
         if (endpoint.startsWith('.')) {
             return urlFor("${current.beanName}$endpoint", *args)
         }
@@ -151,7 +153,15 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             return getBeanType().getSimpleName().replace("Controller$".toRegex(), "").toVariableName() to getMethod().getName()
         }
 
-    fun currentFor(vararg args: Pair<String, Any?>): String {
+    public fun currentFor(vararg args: Pair<String, Any?>): String {
         return urlFor(current.endpoint, *args)
+    }
+
+    public fun currentFor(): String {
+        return currentFor(*arrayOf());
+    }
+
+    public fun currentFor(name: String, value: Any?, vararg values: Any?): String {
+        return currentFor(*mergeToArrayOfPairs(name, value, values))
     }
 }

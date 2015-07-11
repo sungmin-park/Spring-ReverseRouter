@@ -14,18 +14,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @EnableWebMvc
 public class WebMvcJavaConfig extends WebMvcConfigurerAdapter {
     @Bean
-    public ReverseRouter reverseRouter() {
+    public ReverseRouter router() {
         return new ReverseRouter();
     }
 
     @Bean
     public ApplicationListener<?> applicationListener() {
-        return reverseRouter();
+        return router();
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(reverseRouter());
+        registry.addInterceptor(router());
         super.addInterceptors(registry);
     }
 }
