@@ -12,7 +12,14 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+allprojects {
+    apply plugin: 'java'
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = "1.7"
+        targetCompatibility = "1.7"
+    }
+}
+
 apply plugin: 'kotlin'
 
 repositories {
