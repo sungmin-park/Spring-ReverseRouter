@@ -1,5 +1,7 @@
-package kr.redo.reverseRouter
+package kr.redo.reverseRouter.test.kotlin
 
+import kr.redo.reverseRouter.ReverseRouter
+import kr.redo.reverseRouter.kotlin
 import kr.redo.reverseRouter.kotlin.*
 import org.junit.Assert
 import org.junit.Before
@@ -73,7 +75,7 @@ Configuration
 ComponentScan
 EnableWebMvc
 open class WebMvcConfig : WebMvcConfigurerAdapter() {
-    Bean open fun reverseRouter(): ReverseRouter = reverseRouter
+    Bean open fun reverseRouter(): ReverseRouter = kotlin.reverseRouter
 
     Bean open fun applicationListener(): ApplicationListener<*> = reverseRouter()
 

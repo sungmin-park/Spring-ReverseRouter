@@ -70,7 +70,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         assert(initialized)
         hashMapOf<String, List<PatternCompiler>>()
     }
-    private val REVERSER_ROUTER_INFORMATION = javaClass<ReverserRouterInformation>().getTypeName()
+    private val REVERSER_ROUTER_INFORMATION = javaClass<ReverserRouterInformation>().getName()
 
     public val current: ReverserRouterInformation
         get() {
@@ -120,6 +120,15 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
 
             map.put(endpoint, info.getPatternsCondition().getPatterns().map { PatternCompiler(it) })
         }
+    }
+
+    public fun urlFor(endpoint: String): String {
+        return urlFor(endpoint, *arrayOf())
+    }
+
+    public fun urlFor(endpoint: String, name: String, value: Any?, vararg values: Any?): String {
+        val params = arrayOf(name to value) + (0..(values.size() / 2) - 1).map { it * 2 }.map { values[it] as String to values[it + 1] }
+        return urlFor(endpoint, *params.toTypedArray())
     }
 
     fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
