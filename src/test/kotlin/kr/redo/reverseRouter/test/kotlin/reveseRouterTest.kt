@@ -168,10 +168,11 @@ class ReverseRouterTest {
 
     Test
     fun testBuilderFor() {
-        Assert.assertEquals("/user/new/edit", reverseRouter.builderFor("user.edit").toString())
-        Assert.assertEquals(
-                "/user/new/edit?name=john", reverseRouter.builderFor("user.edit").add("name", "john").toString()
-        )
+        val builder = reverseRouter.builderFor("user.edit")
+        Assert.assertEquals("/user/new/edit", builder.toString())
+        Assert.assertEquals("/user/new/edit?name=john", builder.add("name", "john").toString())
+        Assert.assertEquals("/user/new/edit?name=john&name=john", builder.add("name", "john").toString())
+        Assert.assertEquals("/user/new/edit?name=jane", builder.set("name", "jane").toString())
     }
 
     Test

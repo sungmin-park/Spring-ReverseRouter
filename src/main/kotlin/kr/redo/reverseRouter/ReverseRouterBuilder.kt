@@ -10,4 +10,9 @@ public class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, publ
     override fun toString(): String {
         return reverseRouter.urlFor(endpoint, *params.toTypedArray())
     }
+
+    fun set(name: String, value: Any?): ReverseRouterBuilder {
+        params.removeAll(params.filter { it.first == name })
+        return add(name, value)
+    }
 }
