@@ -109,7 +109,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             }
             request.setAttribute(
                     REVERSER_ROUTER_INFORMATION,
-                    ReverserRouterInformation(baseName, methodName, pathVariables, requestURL)
+                    ReverserRouterInformation(baseName, methodName, pathVariables, requestURL, request)
             )
         }
         return true;
@@ -152,12 +152,22 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         if (endpoint.startsWith('.')) {
             return urlFor("${current.beanName}$endpoint", *args)
         }
+        var external = false
         @suppress("UNCHECKED_CAST")
-        val params = args.filter { it.second != null } as List<Pair<String, Any>>
+        val params = args
+                .filter { it.second != null }
+                .filter {
+                    if (it.first == "_external") {
+                        external = true
+                        return@filter false
+                    }
+                    true
+                } as List<Pair<String, Any>>
         val patterns = map.get(endpoint) ?: throw IllegalArgumentException("Not found $endpoint")
         for (pattern in patterns) {
             if (pattern.canCompile(params)) {
-                return pattern.compile(params)
+                val url = pattern.compile(params)
+                return "${if (external) current.urlPrefix else ""}${url}"
             }
         }
         throw IllegalArgumentException("Can not compile $endpoint with ${params} for ${patterns.map { it.pattern }.joinToString()}")
@@ -184,3 +194,5 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         return ReverseRouterBuilder(this, endpoint)
     }
 }
+
+

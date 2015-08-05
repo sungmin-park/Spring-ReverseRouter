@@ -77,6 +77,12 @@ class RouterController {
     RequestMapping("/currentRequestURL")
     ResponseBody
     fun currentRequestURL() = reverseRouter.current.requestURL
+
+    RequestMapping("/external")
+    ResponseBody
+    fun external(): String {
+        return reverseRouter.currentFor("_external" to true)
+    }
 }
 
 Configuration
@@ -180,10 +186,18 @@ class ReverseRouterTest {
         mockMvc.perform(get("/router/builder")).andExpect(content().string("/router/builder"))
     }
 
-    Test fun testCurrentRequestURL() {
-        mockMvc.perform(get("/router/currentRequestURL")).andExpect(content().string("/router/currentRequestURL"))
+    Test
+    fun testCurrentRequestURL() {
+        mockMvc.perform(get("/router/currentRequestURL"))
+                .andExpect(content().string("/router/currentRequestURL"))
         mockMvc.perform(get("/router/currentRequestURL?param=value"))
                 .andExpect(content().string("/router/currentRequestURL?param=value"))
+    }
+
+    Test
+    fun testExternal() {
+        mockMvc.perform(get("/router/external"))
+                .andExpect(content().string("http://localhost/router/external"))
     }
 }
 
