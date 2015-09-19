@@ -28,70 +28,70 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
-Controller
+@Controller
 class MainController {
-    RequestMapping("/")
+    @RequestMapping("/")
     fun index() {
     }
 }
 
-Controller
-RequestMapping("/user")
+@Controller
+@RequestMapping("/user")
 class UserController {
-    RequestMapping("/")
+    @RequestMapping("/")
     fun list() {
     }
 
-    RequestMapping("/{id}")
+    @RequestMapping("/{id}")
     fun show() {
     }
 
-    RequestMapping("/{id}/edit", "/new/edit")
+    @RequestMapping("/{id}/edit", "/new/edit")
     fun edit() {
     }
 }
 
-Controller
-RequestMapping("/router")
+@Controller
+@RequestMapping("/router")
 class RouterController {
-    RequestMapping("/endpoint")
-    ResponseBody
+    @RequestMapping("/endpoint")
+    @ResponseBody
     fun endpoint() = reverseRouter.current.endpoint
 
-    RequestMapping("/dotNotation")
-    ResponseBody
+    @RequestMapping("/dotNotation")
+    @ResponseBody
     fun dotNotation() = urlFor(".dotNotation")
 
-    RequestMapping("/currentUrl")
-    ResponseBody
+    @RequestMapping("/currentUrl")
+    @ResponseBody
     fun currentUrl() = currentFor()
 
-    RequestMapping("/current/{id}")
-    ResponseBody
+    @RequestMapping("/current/{id}")
+    @ResponseBody
     fun current() = currentFor("id" to reverseRouter.current.pathVariables["id"])
 
-    RequestMapping("/builder")
-    ResponseBody
+    @RequestMapping("/builder")
+    @ResponseBody
     fun builder() = reverseRouter.builder.toString()
 
-    RequestMapping("/currentRequestURL")
-    ResponseBody
+    @RequestMapping("/currentRequestURL")
+    @ResponseBody
     fun currentRequestURL() = reverseRouter.current.requestURL
 
-    RequestMapping("/external")
-    ResponseBody
+    @RequestMapping("/external")
+    @ResponseBody
     fun external(): String {
         return reverseRouter.currentFor("_external" to true)
     }
 }
 
-Configuration
-ComponentScan
-EnableWebMvc
+@Configuration
+@ComponentScan
+@EnableWebMvc
 open class WebMvcConfig : WebMvcConfigurerAdapter() {
-    Bean open fun reverseRouter(): ReverseRouter = kotlin.reverseRouter
+    @Bean open fun reverseRouter(): ReverseRouter = kotlin.reverseRouter
 
-    Bean open fun applicationListener(): ApplicationListener<*> = reverseRouter()
+    @Bean open fun applicationListener(): ApplicationListener<*> = reverseRouter()
 
     override fun addInterceptors(registry: InterceptorRegistry?) {
         registry?.addInterceptor(reverseRouter())
@@ -103,31 +103,31 @@ fun get(urlTemplate: String, vararg urlVariables: Any) = MockMvcRequestBuilders.
 
 fun content() = MockMvcResultMatchers.content()
 
-RunWith(SpringJUnit4ClassRunner::class)
-ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
-WebAppConfiguration
+@RunWith(SpringJUnit4ClassRunner::class)
+@ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
+@WebAppConfiguration
 class ReverseRouterTest {
-    Inject
+    @Inject
     private var wac: WebApplicationContext? = null
     private var mockMvc by Delegates.notNull<MockMvc>()
 
-    Before
+    @Before
     public fun before() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).build()
     }
 
 
-    Test
+    @Test
     fun testInitialize() {
         Assert.assertTrue(reverseRouter.initialized)
     }
 
-    Test
+    @Test
     fun testIndex() {
         Assert.assertEquals("/", urlFor("main.index"))
     }
 
-    Test
+    @Test
     fun testUser() {
         Assert.assertEquals("/user/", urlFor("user.list"))
         Assert.assertEquals("/user/12", urlFor("user.show", "id" to 12))
@@ -136,43 +136,43 @@ class ReverseRouterTest {
         Assert.assertEquals("/user/12/edit", urlFor("user.edit", "id" to 12))
     }
 
-    Test
+    @Test
     fun testHandleNullable() {
         Assert.assertEquals("/user/new/edit", urlFor("user.edit", "id" to null))
     }
 
-    Test
+    @Test
     fun testExtraParams() {
         Assert.assertEquals("/user/?page=10", urlFor("user.list", "page" to 10))
     }
 
-    Test
+    @Test
     fun testRedirect() {
         Assert.assertEquals("redirect:/user/", redirect(urlFor("user.list")))
     }
 
-    Test
+    @Test
     fun restRedirectFor() {
         Assert.assertEquals("redirect:/user/", redirectFor("user.list"))
     }
 
-    Test
+    @Test
     fun testCurrentEndpoint() {
         mockMvc.perform(get(urlFor("router.endpoint"))).andExpect(content().string("router.endpoint"))
     }
 
-    Test
+    @Test
     fun testDotNotation() {
         mockMvc.perform(get(urlFor("router.dotNotation"))).andExpect(content().string("/router/dotNotation"))
     }
 
-    Test
+    @Test
     fun testCurrentFor() {
         mockMvc.perform(get(urlFor("router.currentUrl"))).andExpect(content().string("/router/currentUrl"))
         mockMvc.perform(get(urlFor("router.current", "id" to 1))).andExpect(content().string("/router/current/1"))
     }
 
-    Test
+    @Test
     fun testBuilderFor() {
         val builder = reverseRouter.builderFor("user.edit")
         Assert.assertEquals("/user/new/edit", builder.toString())
@@ -181,12 +181,12 @@ class ReverseRouterTest {
         Assert.assertEquals("/user/new/edit?name=jane", builder.set("name", "jane").toString())
     }
 
-    Test
+    @Test
     fun testBuilder() {
         mockMvc.perform(get("/router/builder")).andExpect(content().string("/router/builder"))
     }
 
-    Test
+    @Test
     fun testCurrentRequestURL() {
         mockMvc.perform(get("/router/currentRequestURL"))
                 .andExpect(content().string("/router/currentRequestURL"))
@@ -194,7 +194,7 @@ class ReverseRouterTest {
                 .andExpect(content().string("/router/currentRequestURL?param=value"))
     }
 
-    Test
+    @Test
     fun testExternal() {
         mockMvc.perform(get("/router/external"))
                 .andExpect(content().string("http://localhost/router/external"))

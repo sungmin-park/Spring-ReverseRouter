@@ -1,7 +1,6 @@
 package kr.redo.reverseRouter.kotlin
 
 import kr.redo.reverseRouter.ReverseRouter
-import org.springframework.web.servlet.ModelAndView
 
 public object reverseRouter : ReverseRouter()
 

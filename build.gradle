@@ -1,7 +1,7 @@
 version = "0.0.1"
 
 buildscript {
-    ext.kotlin_version = '0.12.613'
+    ext.kotlin_version = '0.13.1513'
     ext.spring_version = '3.2.3.RELEASE'
 
     repositories {
@@ -45,10 +45,14 @@ dependencies {
 apply plugin: 'maven'
 group = 'com.github.parksungmin'
 task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier 'sources'
-	from sourceSets.main.allSource
+    classifier 'sources'
+    from sourceSets.main.allSource
 }
- 
+
 artifacts {
-	archives sourcesJar
+    archives sourcesJar
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
 }

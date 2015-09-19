@@ -18,7 +18,6 @@ import javax.naming.ConfigurationException
 import javax.servlet.DispatcherType
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import kotlin.properties.Delegates
 
 
 class PatternCompiler(public val pattern: String) {
@@ -64,18 +63,18 @@ class PatternCompiler(public val pattern: String) {
 }
 
 open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerInterceptor {
-    Inject private var request: HttpServletRequest? = null
+    @Inject private lateinit val request: HttpServletRequest
 
     var initialized = false
-    private val map: Map<String, List<PatternCompiler>> by Delegates.lazy {
+    private val map: Map<String, List<PatternCompiler>> by lazy(LazyThreadSafetyMode.NONE) {
         assert(initialized)
         hashMapOf<String, List<PatternCompiler>>()
     }
-    private val REVERSER_ROUTER_INFORMATION = javaClass<ReverserRouterInformation>().getName()
+    private val REVERSER_ROUTER_INFORMATION = ReverserRouterInformation::class.java.name
 
     public val current: ReverserRouterInformation
         get() {
-            val attribute = request!!.getAttribute(REVERSER_ROUTER_INFORMATION) ?:
+            val attribute = request.getAttribute(REVERSER_ROUTER_INFORMATION) ?:
                     throw ConfigurationException("ReverseRouter dose not configured as an interceptor.")
             return attribute as ReverserRouterInformation
         }
@@ -86,25 +85,25 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         if (event == null) {
             return
         }
-        val context = event.getApplicationContext()
-        initialize(context.getBean(javaClass<RequestMappingHandlerMapping>()))
+        val context = event.applicationContext
+        initialize(context.getBean(RequestMappingHandlerMapping::class.java))
     }
 
     override fun preHandle(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?): Boolean {
         if (handler is HandlerMethod) {
             val (baseName, methodName) = handler.endpoint
-            @suppress("UNCHECKED_CAST")
+            @Suppress("UNCHECKED_CAST")
             val pathVariables =
                     request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>
 
             val requestURL: String
-            if (request.getDispatcherType() == DispatcherType.INCLUDE) {
+            if (request.dispatcherType == DispatcherType.INCLUDE) {
                 requestURL = request.getAttribute("javax.servlet.include.request_uri") as String
             } else {
-                if (request.getQueryString() != null) {
-                    requestURL = request.getRequestURI() + "?" + request.getQueryString()
+                if (request.queryString != null) {
+                    requestURL = request.requestURI + "?" + request.queryString
                 } else {
-                    requestURL = request.getRequestURI()
+                    requestURL = request.requestURI
                 }
             }
             request.setAttribute(
@@ -125,15 +124,15 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         initialized = true
         val map: MutableMap<String, List<PatternCompiler>> = this.map as MutableMap
 
-        val mappings = requestMappingHandlerMapping.getHandlerMethods()
+        val mappings = requestMappingHandlerMapping.handlerMethods
         for ((info, handlerMethod) in mappings) {
-            handlerMethod.getMethod() ?: continue
+            handlerMethod.method ?: continue
             val (beanName, methodName) = handlerMethod.endpoint
             val endpoint = "$beanName.$methodName"
 
             assert(!map.containsKey(endpoint))
 
-            map.put(endpoint, info.getPatternsCondition().getPatterns().map { PatternCompiler(it) })
+            map.put(endpoint, info.patternsCondition.patterns.map { PatternCompiler(it) })
         }
     }
 
@@ -146,14 +145,17 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         return urlFor(endpoint, *params)
     }
 
-    private fun mergeToArrayOfPairs(name: String, value: Any?, values: Array<out Any?>) = (arrayOf(name to value) + (0..(values.size() / 2) - 1).map { it * 2 }.map { values[it] as String to values[it + 1] }).toTypedArray()
+    private fun mergeToArrayOfPairs(name: String, value: Any?, values: Array<out Any?>) =
+            (arrayOf(name to value) + (0..(values.size() / 2) - 1)
+                    .map { it * 2 }
+                    .map { values[it] as String to values[it + 1] })
 
     public fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
         if (endpoint.startsWith('.')) {
             return urlFor("${current.beanName}$endpoint", *args)
         }
         var external = false
-        @suppress("UNCHECKED_CAST")
+        @Suppress("UNCHECKED_CAST")
         val params = args
                 .filter { it.second != null }
                 .filter {
@@ -167,15 +169,15 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         for (pattern in patterns) {
             if (pattern.canCompile(params)) {
                 val url = pattern.compile(params)
-                return "${if (external) current.urlPrefix else ""}${url}"
+                return "${if (external) current.urlPrefix else ""}$url"
             }
         }
-        throw IllegalArgumentException("Can not compile $endpoint with ${params} for ${patterns.map { it.pattern }.joinToString()}")
+        throw IllegalArgumentException("Can not compile $endpoint with $params for ${patterns.map { it.pattern }.joinToString()}")
     }
 
     private val HandlerMethod.endpoint: Pair<String, String>
         get() {
-            return getBeanType().getSimpleName().replace("Controller$".toRegex(), "").toVariableName() to getMethod().getName()
+            return beanType.simpleName.replace("Controller$".toRegex(), "").toVariableName() to method.name
         }
 
     public fun currentFor(vararg args: Pair<String, Any?>): String {

@@ -13,7 +13,7 @@ fun String.join(strings: List<String>): String {
     return builder.toString()
 }
 
-fun String.toVariableName():String {
+fun String.toVariableName(): String {
     return "${substring(0, 1).toLowerCase()}${substring(1)}"
 }
 
