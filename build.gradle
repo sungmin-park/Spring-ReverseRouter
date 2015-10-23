@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '0.13.1513'
+    ext.kotlin_version = '1.0.0-beta-1038'
     ext.spring_version = '3.2.3.RELEASE'
 
     repositories {
@@ -25,19 +25,15 @@ repositories {
 }
 
 dependencies {
-    compile(
-            "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
-            "org.springframework:spring-webmvc:$spring_version",
-            'javax.inject:javax.inject:1',
-            'javax.servlet:javax.servlet-api:3.1.0'
-    )
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.springframework:spring-webmvc:$spring_version"
+    compile 'javax.inject:javax.inject:1'
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
 
-    testCompile(
-            "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version",
-            'javax.servlet:servlet-api:2.5',
-            'junit:junit:4.12',
-            "org.springframework:spring-test:$spring_version"
-    )
+    testCompile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    testCompile 'javax.servlet:servlet-api:2.5'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.springframework:spring-test:$spring_version"
 }
 
 apply plugin: 'maven'

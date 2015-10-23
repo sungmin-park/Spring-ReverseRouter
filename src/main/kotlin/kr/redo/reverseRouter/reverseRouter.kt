@@ -54,7 +54,7 @@ class PatternCompiler(public val pattern: String) {
             }
         }
         val uri = uriComponentsBuilder.expand(pathMap).toString()
-        if (queryParams.size() == 0) {
+        if (queryParams.size == 0) {
             return uri;
         }
         val separator = if ("?" in uri) "&" else "?"
@@ -63,7 +63,7 @@ class PatternCompiler(public val pattern: String) {
 }
 
 open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerInterceptor {
-    @Inject private lateinit val request: HttpServletRequest
+    @Inject private lateinit var request: HttpServletRequest
 
     var initialized = false
     private val map: Map<String, List<PatternCompiler>> by lazy(LazyThreadSafetyMode.NONE) {
@@ -146,7 +146,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     }
 
     private fun mergeToArrayOfPairs(name: String, value: Any?, values: Array<out Any?>) =
-            (arrayOf(name to value) + (0..(values.size() / 2) - 1)
+            (arrayOf(name to value) + (0..(values.size / 2) - 1)
                     .map { it * 2 }
                     .map { values[it] as String to values[it + 1] })
 
