@@ -26,11 +26,11 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile "org.springframework:spring-webmvc:$spring_version"
     compile 'javax.inject:javax.inject:1'
     compile 'javax.servlet:javax.servlet-api:3.1.0'
 
-    testCompile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testCompile 'javax.servlet:servlet-api:2.5'
     testCompile 'junit:junit:4.12'
     testCompile "org.springframework:spring-test:$spring_version"
