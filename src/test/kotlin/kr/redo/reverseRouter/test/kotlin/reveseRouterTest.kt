@@ -100,7 +100,7 @@ open class WebMvcConfig : WebMvcConfigurerAdapter() {
 
 fun get(urlTemplate: String, vararg urlVariables: Any) = MockMvcRequestBuilders.get(urlTemplate, *urlVariables)!!
 
-fun content() = MockMvcResultMatchers.content()
+fun content() = MockMvcResultMatchers.content()!!
 
 @RunWith(SpringJUnit4ClassRunner::class)
 @ContextConfiguration(classes = arrayOf(WebMvcConfig::class))
@@ -110,8 +110,7 @@ class ReverseRouterTest {
     private var wac: WebApplicationContext? = null
     private var mockMvc by Delegates.notNull<MockMvc>()
 
-    @Before
-    public fun before() {
+    @Before fun before() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).build()
     }
 

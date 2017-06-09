@@ -20,9 +20,9 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 
-class PatternCompiler(public val pattern: String) {
+class PatternCompiler(val pattern: String) {
     companion object {
-        val NAMES_PATTERN = Pattern.compile("\\{([^/]+?)\\}")
+        val NAMES_PATTERN = Pattern.compile("\\{([^/]+?)}")!!
     }
 
     val uriComponentsBuilder: UriComponents
@@ -45,7 +45,7 @@ class PatternCompiler(public val pattern: String) {
 
     fun compile(args: List<Pair<String, Any>>): String {
         val pathMap = hashMapOf<String, String>()
-        val queryParams = arrayListOf<Pair<String, Any>>();
+        val queryParams = arrayListOf<Pair<String, Any>>()
         args.forEach {
             if (it.first in pathVariables) {
                 pathMap.put(it.first, it.second.toString())
@@ -55,10 +55,10 @@ class PatternCompiler(public val pattern: String) {
         }
         val uri = uriComponentsBuilder.expand(pathMap).toString()
         if (queryParams.size == 0) {
-            return uri;
+            return uri
         }
         val separator = if ("?" in uri) "&" else "?"
-        return separator.join(listOf(uri, encodeQueryParams(params = queryParams)));
+        return separator.join(listOf(uri, encodeQueryParams(params = queryParams)))
     }
 }
 
@@ -72,14 +72,14 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     }
     private val REVERSER_ROUTER_INFORMATION = ReverserRouterInformation::class.java.name
 
-    public val current: ReverserRouterInformation
+    val current: ReverserRouterInformation
         get() {
             val attribute = request.getAttribute(REVERSER_ROUTER_INFORMATION) ?:
                     throw ConfigurationException("ReverseRouter dose not configured as an interceptor.")
             return attribute as ReverserRouterInformation
         }
 
-    public val builder: ReverseRouterBuilder get() = builderFor(current.endpoint)
+    val builder: ReverseRouterBuilder get() = builderFor(current.endpoint)
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         if (event == null) {
@@ -111,7 +111,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                     ReverserRouterInformation(baseName, methodName, pathVariables, requestURL, request)
             )
         }
-        return true;
+        return true
     }
 
     override fun postHandle(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?, modelAndView: ModelAndView?) {
@@ -120,7 +120,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
     override fun afterCompletion(request: HttpServletRequest?, response: HttpServletResponse?, handler: Any?, ex: Exception?) {
     }
 
-    public fun initialize(requestMappingHandlerMapping: RequestMappingHandlerMapping) {
+    fun initialize(requestMappingHandlerMapping: RequestMappingHandlerMapping) {
         initialized = true
         val map: MutableMap<String, List<PatternCompiler>> = this.map as MutableMap
 
@@ -136,11 +136,11 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
         }
     }
 
-    public fun urlFor(endpoint: String): String {
+    fun urlFor(endpoint: String): String {
         return urlFor(endpoint, *arrayOf())
     }
 
-    public fun urlFor(endpoint: String, name: String, value: Any?, vararg values: Any?): String {
+    fun urlFor(endpoint: String, name: String, value: Any?, vararg values: Any?): String {
         val params = mergeToArrayOfPairs(name, value, values)
         return urlFor(endpoint, *params)
     }
@@ -150,7 +150,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                     .map { it * 2 }
                     .map { values[it] as String to values[it + 1] })
 
-    public fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
+    fun urlFor(endpoint: String, vararg args: Pair<String, Any?>): String {
         if (endpoint.startsWith('.')) {
             return urlFor("${current.beanName}$endpoint", *args)
         }
@@ -165,13 +165,11 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                     }
                     true
                 } as List<Pair<String, Any>>
-        val patterns = map.get(endpoint) ?: throw IllegalArgumentException("Not found $endpoint")
-        for (pattern in patterns) {
-            if (pattern.canCompile(params)) {
-                val url = pattern.compile(params)
-                return "${if (external) current.urlPrefix else ""}$url"
-            }
-        }
+        val patterns = map[endpoint] ?: throw IllegalArgumentException("Not found $endpoint")
+        patterns
+                .filter { it.canCompile(params) }
+                .map { it.compile(params) }
+                .forEach { return "${if (external) current.urlPrefix else ""}$it" }
         throw IllegalArgumentException("Can not compile $endpoint with $params for ${patterns.map { it.pattern }.joinToString()}")
     }
 
@@ -180,15 +178,15 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             return beanType.simpleName.replace("Controller$".toRegex(), "").toVariableName() to method.name
         }
 
-    public fun currentFor(vararg args: Pair<String, Any?>): String {
+    fun currentFor(vararg args: Pair<String, Any?>): String {
         return urlFor(current.endpoint, *args)
     }
 
-    public fun currentFor(): String {
-        return currentFor(*arrayOf());
+    fun currentFor(): String {
+        return currentFor(*arrayOf())
     }
 
-    public fun currentFor(name: String, value: Any?, vararg values: Any?): String {
+    fun currentFor(name: String, value: Any?, vararg values: Any?): String {
         return currentFor(*mergeToArrayOfPairs(name, value, values))
     }
 
