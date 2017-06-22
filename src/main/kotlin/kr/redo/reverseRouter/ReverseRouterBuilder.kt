@@ -1,10 +1,8 @@
 package kr.redo.reverseRouter
 
-class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, val endpoint: String) {
-    private val params = arrayListOf<Pair<String, Any?>>()
+data class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, val endpoint: String, private val params: List<Pair<String, Any?>> = listOf<Pair<String, Any?>>()) {
     fun add(name: String, value: Any?): ReverseRouterBuilder {
-        params.add(name to value)
-        return this
+        return ReverseRouterBuilder(reverseRouter, endpoint, params + (name to value))
     }
 
     override fun toString(): String {
@@ -12,7 +10,6 @@ class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, val endpoin
     }
 
     fun set(name: String, value: Any?): ReverseRouterBuilder {
-        params.removeAll(params.filter { it.first == name })
-        return add(name, value)
+        return ReverseRouterBuilder(reverseRouter, endpoint, params.filter { it.first != name } + (name to value))
     }
 }

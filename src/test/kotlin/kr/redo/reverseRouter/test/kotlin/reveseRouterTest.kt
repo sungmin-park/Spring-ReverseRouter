@@ -175,8 +175,8 @@ class ReverseRouterTest {
         val builder = reverseRouter.builderFor("user.edit")
         Assert.assertEquals("/user/new/edit", builder.toString())
         Assert.assertEquals("/user/new/edit?name=john", builder.add("name", "john").toString())
-        Assert.assertEquals("/user/new/edit?name=john&name=john", builder.add("name", "john").toString())
-        Assert.assertEquals("/user/new/edit?name=jane", builder.set("name", "jane").toString())
+        Assert.assertEquals("/user/new/edit?name=john&name=john", builder.add("name", "john").add("name", "john").toString())
+        Assert.assertEquals("/user/new/edit?name=jane", builder.add("name", "john").set("name", "jane").toString())
     }
 
     @Test
@@ -196,6 +196,14 @@ class ReverseRouterTest {
     fun testExternal() {
         mockMvc.perform(get("/router/external"))
                 .andExpect(content().string("http://localhost/router/external"))
+    }
+
+    @Test
+    fun testImmutable() {
+        val builder = reverseRouter.builderFor("main.index")
+        Assert.assertEquals("/", builder.toString())
+        Assert.assertEquals("/?code=1", builder.add("code", 1).toString())
+        Assert.assertEquals("/", builder.toString())
     }
 }
 
