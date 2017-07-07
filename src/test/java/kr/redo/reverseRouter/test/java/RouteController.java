@@ -19,6 +19,12 @@ public class RouteController {
         return router.currentFor();
     }
 
+    @RequestMapping("/external")
+    @ResponseBody
+    public String external() {
+        return router.getBuilder().asExternal().toString();
+    }
+
     @SuppressWarnings("MVCPathVariableInspection")
     @RequestMapping("/currentFor/{id}")
     @ResponseBody
