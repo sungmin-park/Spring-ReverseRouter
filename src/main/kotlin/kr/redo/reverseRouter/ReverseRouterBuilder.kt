@@ -9,6 +9,10 @@ data class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, val en
         return reverseRouter.urlFor(endpoint, *params.toTypedArray())
     }
 
+    fun asExternal(): ReverseRouterBuilder {
+        return set("_external", true)
+    }
+
     fun set(name: String, value: Any?): ReverseRouterBuilder {
         return ReverseRouterBuilder(reverseRouter, endpoint, params.filter { it.first != name } + (name to value))
     }

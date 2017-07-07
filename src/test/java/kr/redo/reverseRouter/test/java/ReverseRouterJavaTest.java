@@ -62,4 +62,9 @@ public class ReverseRouterJavaTest {
         mockMvc.perform(get("/router/currentFor")).andExpect(content().string("/router/currentFor"));
         mockMvc.perform(get("/router/currentFor/12")).andExpect(content().string("/router/currentFor/12"));
     }
+
+    @Test
+    public void testAsExternal() throws Exception {
+        mockMvc.perform(get("/router/external")).andExpect(content().string("http://localhost/router/external"));
+    }
 }

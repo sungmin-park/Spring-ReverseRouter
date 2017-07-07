@@ -82,6 +82,12 @@ class RouterController {
     fun external(): String {
         return reverseRouter.currentFor("_external" to true)
     }
+
+    @RequestMapping("/external2")
+    @ResponseBody
+    fun external2(): String {
+        return reverseRouter.builderFor(".external2").asExternal().toString()
+    }
 }
 
 @Configuration
@@ -196,6 +202,9 @@ class ReverseRouterTest {
     fun testExternal() {
         mockMvc.perform(get("/router/external"))
                 .andExpect(content().string("http://localhost/router/external"))
+
+        mockMvc.perform(get("/router/external2"))
+                .andExpect(content().string("http://localhost/router/external2"))
     }
 
     @Test
