@@ -208,6 +208,14 @@ class ReverseRouterTest {
 
         mockMvc.perform(get("/router/external").header("X-Forwarded-Proto", "https"))
                 .andExpect(content().string("https://localhost/router/external"))
+
+        // test cloudflare header
+        // 참고 https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
+        mockMvc.perform(get("/router/external").header("Cf-Visitor", "{ \"scheme\":\"https\"}"))
+                .andExpect(content().string("https://localhost/router/external"))
+
+        mockMvc.perform(get("/router/external").header("Cf-Visitor", "{ \"scheme\":\"http\"}"))
+                .andExpect(content().string("http://localhost/router/external"))
     }
 
     @Test
