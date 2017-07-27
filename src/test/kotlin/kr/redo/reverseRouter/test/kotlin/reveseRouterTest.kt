@@ -205,6 +205,9 @@ class ReverseRouterTest {
 
         mockMvc.perform(get("/router/external2"))
                 .andExpect(content().string("http://localhost/router/external2"))
+
+        mockMvc.perform(get("/router/external").header("X-Forwarded-Proto", "https"))
+                .andExpect(content().string("https://localhost/router/external"))
     }
 
     @Test
