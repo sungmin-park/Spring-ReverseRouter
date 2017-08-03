@@ -53,7 +53,7 @@ class PatternCompiler(val pattern: String) {
                 queryParams.add(it)
             }
         }
-        val uri = uriComponentsBuilder.expand(pathMap).toString()
+        val uri = uriComponentsBuilder.expand(pathMap).encode().toString()
         if (queryParams.size == 0) {
             return uri
         }

@@ -141,6 +141,11 @@ class ReverseRouterTest {
     }
 
     @Test
+    fun testPathVariableEncode() {
+        Assert.assertEquals("/user/John%23Doe", urlFor("user.show", "id" to "John#Doe"))
+    }
+
+    @Test
     fun testHandleNullable() {
         Assert.assertEquals("/user/new/edit", urlFor("user.edit", "id" to null))
     }
