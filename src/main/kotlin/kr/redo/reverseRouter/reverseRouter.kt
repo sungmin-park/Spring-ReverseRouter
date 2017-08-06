@@ -94,7 +94,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             val (baseName, methodName) = handler.endpoint
             @Suppress("UNCHECKED_CAST")
             val pathVariables =
-                    request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>
+                    request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>? ?: mapOf()
 
             val requestURL: String
             if (request.dispatcherType == DispatcherType.INCLUDE) {
