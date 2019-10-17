@@ -63,7 +63,8 @@ class PatternCompiler(val pattern: String) {
 }
 
 open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerInterceptor {
-    @Inject private lateinit var request: HttpServletRequest
+    @Inject
+    private lateinit var request: HttpServletRequest
 
     var initialized = false
     private val map: Map<String, List<PatternCompiler>> by lazy(LazyThreadSafetyMode.NONE) {
@@ -74,12 +75,22 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
 
     val current: ReverserRouterInformation
         get() {
-            val attribute = request.getAttribute(REVERSER_ROUTER_INFORMATION) ?:
-                    throw ConfigurationException("ReverseRouter dose not configured as an interceptor.")
+            val attribute = request.getAttribute(REVERSER_ROUTER_INFORMATION)
+                    ?: throw ConfigurationException("ReverseRouter dose not configured as an interceptor.")
             return attribute as ReverserRouterInformation
         }
 
     val builder: ReverseRouterBuilder get() = builderFor(current.endpoint)
+    val currentBuilder: ReverseRouterBuilder
+        get() {
+            val pathVariableBuilder = current.pathVariables.entries
+                    .fold(builder) { builder, (name, value) ->
+                        builder.add(name, value)
+                    }
+            return current.parameterMap.entries.fold(pathVariableBuilder) { builder, (name, parameters) ->
+                parameters.fold(builder) { parameterBuilder, parameter -> parameterBuilder.add(name, parameter) }
+            }
+        }
 
     override fun onApplicationEvent(event: ContextRefreshedEvent?) {
         if (event == null) {
@@ -94,7 +105,8 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             val (baseName, methodName) = handler.endpoint
             @Suppress("UNCHECKED_CAST")
             val pathVariables =
-                    request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>? ?: mapOf()
+                    request!!.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, Any>?
+                            ?: mapOf()
 
             val requestURL: String
             if (request.dispatcherType == DispatcherType.INCLUDE) {
@@ -108,7 +120,7 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             }
             request.setAttribute(
                     REVERSER_ROUTER_INFORMATION,
-                    ReverserRouterInformation(baseName, methodName, pathVariables, requestURL, request)
+                    ReverserRouterInformation(baseName, methodName, pathVariables, request.parameterMap.toMap(), requestURL, request)
             )
         }
         return true

@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest
 
 data class ReverserRouterInformation(val beanName: String, val methodName: String,
                                      val pathVariables: Map<String, Any>,
+                                     val parameterMap: Map<String, Array<out String>>,
                                      val requestURL: String, private val request: HttpServletRequest) {
     val endpoint: String = "$beanName.$methodName"
 

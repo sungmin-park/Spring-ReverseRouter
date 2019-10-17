@@ -88,15 +88,23 @@ class RouterController {
     fun external2(): String {
         return reverseRouter.builderFor(".external2").asExternal().toString()
     }
+
+    @RequestMapping("/currentRequestBuilder/{id}/{name}")
+    @ResponseBody
+    fun currentRequestBuilder(): String {
+        return reverseRouter.currentBuilder.toString()
+    }
 }
 
 @Configuration
 @ComponentScan
 @EnableWebMvc
 open class WebMvcConfig : WebMvcConfigurerAdapter() {
-    @Bean open fun reverseRouter(): ReverseRouter = reverseRouter
+    @Bean
+    open fun reverseRouter(): ReverseRouter = reverseRouter
 
-    @Bean open fun applicationListener(): ApplicationListener<*> = reverseRouter()
+    @Bean
+    open fun applicationListener(): ApplicationListener<*> = reverseRouter()
 
     override fun addInterceptors(registry: InterceptorRegistry?) {
         registry?.addInterceptor(reverseRouter())
@@ -116,7 +124,8 @@ class ReverseRouterTest {
     private var wac: WebApplicationContext? = null
     private var mockMvc by Delegates.notNull<MockMvc>()
 
-    @Before fun before() {
+    @Before
+    fun before() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).build()
     }
 
@@ -229,6 +238,14 @@ class ReverseRouterTest {
         Assert.assertEquals("/", builder.toString())
         Assert.assertEquals("/?code=1", builder.add("code", 1).toString())
         Assert.assertEquals("/", builder.toString())
+    }
+
+    @Test
+    fun testCurrentRequestBuilder() {
+        val perform = mockMvc.perform(get("/router/currentRequestBuilder/001/john"))
+        perform.andExpect(content().string("/router/currentRequestBuilder/001/john"))
+        mockMvc.perform(get("/router/currentRequestBuilder/001/john?param=value"))
+                .andExpect(content().string("/router/currentRequestBuilder/001/john?param=value"))
     }
 }
 
