@@ -73,6 +73,10 @@ class RouterController {
     @ResponseBody
     fun builder() = reverseRouter.builder.toString()
 
+    @RequestMapping("/builder/set-endpoint")
+    @ResponseBody
+    fun builderSetEndpoint() = reverseRouter.builder.setEndpoint(".builder").toString()
+
     @RequestMapping("/currentRequestURL")
     @ResponseBody
     fun currentRequestURL() = reverseRouter.current.requestURL
@@ -202,6 +206,7 @@ class ReverseRouterTest {
     @Test
     fun testBuilder() {
         mockMvc.perform(get("/router/builder")).andExpect(content().string("/router/builder"))
+        mockMvc.perform(get("/router/builder/set-endpoint")).andExpect(content().string("/router/builder"))
     }
 
     @Test

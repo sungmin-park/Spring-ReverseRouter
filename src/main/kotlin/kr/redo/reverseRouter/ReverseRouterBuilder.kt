@@ -16,4 +16,8 @@ data class ReverseRouterBuilder(private val reverseRouter: ReverseRouter, val en
     fun set(name: String, value: Any?): ReverseRouterBuilder {
         return ReverseRouterBuilder(reverseRouter, endpoint, params.filter { it.first != name } + (name to value))
     }
+
+    fun setEndpoint(endpoint: String): ReverseRouterBuilder {
+        return copy(endpoint = endpoint)
+    }
 }
