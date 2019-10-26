@@ -1,6 +1,8 @@
 package kr.redo.reverseRouter.utils
 
 import java.net.URLEncoder
+import java.util.regex.Pattern
+import javax.servlet.http.HttpServletRequest
 
 fun String.join(strings: List<String>): String {
     val builder = StringBuilder()
@@ -24,3 +26,19 @@ fun encodeQueryParams(params: List<Pair<String, Any>>): String {
             }
     )
 }
+
+fun HttpServletRequest.urlPrefix(): String {
+    val scheme = findCfVisitorScheme() ?: getHeader("X-Forwarded-Proto") ?: scheme
+    return "${"$scheme://$serverName"}${if (serverPort != 80) ":$serverPort" else ""}"
+}
+
+private fun HttpServletRequest.findCfVisitorScheme(): String? {
+    val header = getHeader("CF-Visitor") ?: return null
+    val matcher = cfVisitorSchemePattern.matcher(header)
+    if (!matcher.matches()) {
+        return null
+    }
+    return matcher.group(1)
+}
+
+private val cfVisitorSchemePattern = Pattern.compile(".*\"scheme\":\"([^\"]+)\".*")

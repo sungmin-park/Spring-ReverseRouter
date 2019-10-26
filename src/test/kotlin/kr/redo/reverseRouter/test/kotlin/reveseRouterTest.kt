@@ -1,6 +1,7 @@
 package kr.redo.reverseRouter.test.kotlin
 
 import kr.redo.reverseRouter.ReverseRouter
+import kr.redo.reverseRouter.defaultReverserRouterInformation
 import kr.redo.reverseRouter.kotlin.*
 import org.junit.Assert
 import org.junit.Before
@@ -98,6 +99,12 @@ class RouterController {
     fun currentRequestBuilder(): String {
         return reverseRouter.currentBuilder.toString()
     }
+
+    @RequestMapping("/context-path")
+    @ResponseBody
+    fun contextPath(): String {
+        return reverseRouter.currentBuilder.toString()
+    }
 }
 
 @Configuration
@@ -125,12 +132,13 @@ fun content() = MockMvcResultMatchers.content()!!
 @WebAppConfiguration
 class ReverseRouterTest {
     @Inject
-    private var wac: WebApplicationContext? = null
+    private lateinit var wac: WebApplicationContext
     private var mockMvc by Delegates.notNull<MockMvc>()
 
     @Before
     fun before() {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).build()
+        reverseRouter.setReverserRouterInformation(defaultReverserRouterInformation)
     }
 
 
@@ -251,6 +259,14 @@ class ReverseRouterTest {
         perform.andExpect(content().string("/router/currentRequestBuilder/001/john"))
         mockMvc.perform(get("/router/currentRequestBuilder/001/john?param=value"))
                 .andExpect(content().string("/router/currentRequestBuilder/001/john?param=value"))
+    }
+
+    @Test
+    fun testContextPath() {
+        mockMvc.perform(get("/router/context-path"))
+                .andExpect(content().string("/router/context-path"))
+        mockMvc.perform(get("/test/router/context-path").contextPath("/test"))
+                .andExpect(content().string("/test/router/context-path"))
     }
 }
 

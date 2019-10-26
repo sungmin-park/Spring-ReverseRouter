@@ -3,6 +3,7 @@ package kr.redo.reverseRouter
 import kr.redo.reverseRouter.utils.encodeQueryParams
 import kr.redo.reverseRouter.utils.join
 import kr.redo.reverseRouter.utils.toVariableName
+import kr.redo.reverseRouter.utils.urlPrefix
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.web.method.HandlerMethod
@@ -120,7 +121,10 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
             }
             request.setAttribute(
                     REVERSER_ROUTER_INFORMATION,
-                    ReverserRouterInformation(baseName, methodName, pathVariables, request.parameterMap.toMap(), requestURL, request)
+                    ReverserRouterInformation(
+                            baseName, methodName, pathVariables, request.parameterMap.toMap(), requestURL,
+                            request.contextPath, request.urlPrefix()
+                    )
             )
         }
         return true
@@ -178,10 +182,11 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                     true
                 } as List<Pair<String, Any>>
         val patterns = map[endpoint] ?: throw IllegalArgumentException("Not found $endpoint")
+        println("request.contextPath = ${request.contextPath}")
         patterns
                 .filter { it.canCompile(params) }
                 .map { it.compile(params) }
-                .forEach { return "${if (external) current.urlPrefix else ""}$it" }
+                .forEach { return "${if (external) current.urlPrefix else ""}${current.contextPath}$it" }
         throw IllegalArgumentException("Can not compile $endpoint with $params for ${patterns.map { it.pattern }.joinToString()}")
     }
 
@@ -204,6 +209,11 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
 
     fun builderFor(endpoint: String): ReverseRouterBuilder {
         return ReverseRouterBuilder(this, endpoint)
+    }
+
+    // offline or test 용 기능
+    fun setReverserRouterInformation(information: ReverserRouterInformation) {
+        request.setAttribute(REVERSER_ROUTER_INFORMATION, information)
     }
 }
 

@@ -1,6 +1,8 @@
 package kr.redo.reverseRouter.test.java;
 
 import kr.redo.reverseRouter.ReverseRouter;
+import kr.redo.reverseRouter.ReverserRouterInformation;
+import kr.redo.reverseRouter.ReverserRouterInformationKt;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +33,9 @@ public class ReverseRouterJavaTest {
     @Before
     public void before() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        router.setReverserRouterInformation(
+                ReverserRouterInformationKt.getDefaultReverserRouterInformation()
+        );
     }
 
     @Test
