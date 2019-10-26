@@ -182,7 +182,6 @@ open class ReverseRouter : ApplicationListener<ContextRefreshedEvent>, HandlerIn
                     true
                 } as List<Pair<String, Any>>
         val patterns = map[endpoint] ?: throw IllegalArgumentException("Not found $endpoint")
-        println("request.contextPath = ${request.contextPath}")
         patterns
                 .filter { it.canCompile(params) }
                 .map { it.compile(params) }
